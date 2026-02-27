@@ -830,21 +830,23 @@
     </div>
     <div>
       <div class="contact-form">
+        <form id="contactForm">
         <div class="form-group">
           <label>ИМЯ</label>
-          <input type="text" placeholder="Иван Петров">
+          <input type="text" name="name" placeholder="Иван Петров">
         </div>
         <div class="form-group">
           <label>EMAIL</label>
-          <input type="email" placeholder="ivan@company.ru">
+          <input type="email" name="email" placeholder="ivan@company.ru">
         </div>
         <div class="form-group">
           <label>СООБЩЕНИЕ</label>
-          <textarea placeholder="Расскажите о проекте..."></textarea>
+          <textarea name="message" placeholder="Расскажите о проекте..."></textarea>
         </div>
-        <button class="btn btn-primary" onclick="handleSend(event)" style="cursor:none;border:none;text-align:left;">
+        <button type="submit" class="btn btn-primary" style="cursor:none;border:none;text-align:left;">
           Отправить сообщение →
         </button>
+        </form>
       </div>
     </div>
   </div>
@@ -886,16 +888,49 @@
   });
 
   // Form
-  function handleSend(e) {
-    e.preventDefault();
-    const btn = e.target;
-    btn.textContent = 'Отправлено ✓';
-    btn.style.background = '#10b981';
+  const scriptURL = 'https://script.google.com/macros/s/AKfycbyA8IN9Y87vk-V9upf_EVkx17luYoYwRvWBdgbTHJbWDwkAlgU5Uvi7dMeipT6nq3BF-w/exec';
+
+const form = document.getElementById('contactForm');
+const button = form.querySelector('button');
+
+form.addEventListener('submit', function(e) {
+  e.preventDefault();
+
+  button.textContent = 'Отправка...';
+  button.disabled = true;
+
+  const formData = {
+    name: form.name.value,
+    email: form.email.value,
+    message: form.message.value
+  };
+
+  fetch(scriptURL, {
+    method: 'POST',
+    body: JSON.stringify(formData),
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    button.textContent = 'Отправлено ✓';
+    button.style.background = '#10b981';
+    form.reset();
+
     setTimeout(() => {
-      btn.textContent = 'Отправить сообщение →';
-      btn.style.background = '';
+      button.textContent = 'Отправить сообщение →';
+      button.style.background = '';
+      button.disabled = false;
     }, 3000);
-  }
+  })
+  .catch(error => {
+    button.textContent = 'Ошибка ❌';
+    button.style.background = '#ef4444';
+    button.disabled = false;
+    console.error(error);
+  });
+});
 
   // Scroll reveal
   const observer = new IntersectionObserver((entries) => {
