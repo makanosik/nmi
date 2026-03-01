@@ -835,6 +835,10 @@
           <input type="text" placeholder="Иван Петров">
         </div>
         <div class="form-group">
+          <label>ТЕЛЕФОН</label>
+          <input type="phone" placeholder="+7 ...">
+        </div>
+        <div class="form-group">
           <label>EMAIL</label>
           <input type="email" placeholder="ivan@company.ru">
         </div>
@@ -896,6 +900,181 @@
       btn.style.background = '';
     }, 3000);
   }
+
+  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyCOjkCsN7Pq3lAqCnVkaDB-gWZb1e9EoVDQGzkwt36uL6kdZchjvLfFl_aa3bJZ4hLEA/exec';
+
+// Состояние формы
+let isSending = false;
+
+function validateName(value) {
+  return value.trim().length >= 2;
+}
+
+function validatePhone(value) {
+  // Принимает: +7 999 123-45-67, 8(999)1234567, +79991234567 и т.д.
+  const cleaned = value.replace(/[\s\-\(\)]/g, '');
+  return /^(\+7|8)\d{10}$/.test(cleaned);
+}
+
+function validateEmail(value) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+}
+
+function validateMessage(value) {
+  return value.trim().length >= 10;
+}
+
+function setFieldError(input, message) {
+  input.style.borderColor = '#e53e3e';
+  input.style.outline = 'none';
+
+  let errorEl = input.parentNode.querySelector('.field-error');
+  if (!errorEl) {
+    errorEl = document.createElement('span');
+    errorEl.className = 'field-error';
+    errorEl.style.cssText = 'color:#e53e3e;font-size:11px;margin-top:4px;display:block;';
+    input.parentNode.appendChild(errorEl);
+  }
+  errorEl.textContent = message;
+}
+
+function clearFieldError(input) {
+  input.style.borderColor = '';
+  input.style.outline = '';
+  const errorEl = input.parentNode.querySelector('.field-error');
+  if (errorEl) errorEl.remove();
+}
+
+function getFormInputs() {
+  const form = document.querySelector('.contact-form');
+  return {
+    name:    form.querySelector('input[type="text"]'),
+    phone:   form.querySelector('input[type="phone"]'),
+    email:   form.querySelector('input[type="email"]'),
+    message: form.querySelector('textarea'),
+    btn:     form.querySelector('button')
+  };
+}
+
+// Валидация в реальном времени
+document.addEventListener('DOMContentLoaded', () => {
+  const { name, phone, email, message } = getFormInputs();
+
+  name.addEventListener('blur', () => {
+    if (!validateName(name.value))
+      setFieldError(name, 'Введите имя (минимум 2 символа)');
+    else clearFieldError(name);
+  });
+
+  phone.addEventListener('blur', () => {
+    if (!validatePhone(phone.value))
+      setFieldError(phone, 'Формат: +7 999 123-45-67 или 8(999)1234567');
+    else clearFieldError(phone);
+  });
+
+  email.addEventListener('blur', () => {
+    if (!validateEmail(email.value))
+      setFieldError(email, 'Введите корректный email');
+    else clearFieldError(email);
+  });
+
+  message.addEventListener('blur', () => {
+    if (!validateMessage(message.value))
+      setFieldError(message, 'Сообщение должно быть не менее 10 символов');
+    else clearFieldError(message);
+  });
+
+  // Форматирование телефона на лету
+  phone.addEventListener('input', () => {
+    let val = phone.value.replace(/\D/g, '');
+    if (val.startsWith('8')) val = '7' + val.slice(1);
+    if (val.startsWith('7') && val.length > 1) {
+      val = '+7 ' + val.slice(1, 4) + (val.length > 4 ? ' ' + val.slice(4, 7) : '') +
+            (val.length > 7 ? '-' + val.slice(7, 9) : '') +
+            (val.length > 9 ? '-' + val.slice(9, 11) : '');
+      phone.value = val;
+    }
+  });
+});
+
+async function handleSend(event) {
+  event.preventDefault();
+  if (isSending) return;
+
+  const { name, phone, email, message, btn } = getFormInputs();
+
+  // Финальная валидация
+  let hasErrors = false;
+
+  if (!validateName(name.value)) {
+    setFieldError(name, 'Введите имя (минимум 2 символа)');
+    hasErrors = true;
+  } else clearFieldError(name);
+
+  if (!validatePhone(phone.value)) {
+    setFieldError(phone, 'Формат: +7 999 123-45-67 или 8(999)1234567');
+    hasErrors = true;
+  } else clearFieldError(phone);
+
+  if (!validateEmail(email.value)) {
+    setFieldError(email, 'Введите корректный email');
+    hasErrors = true;
+  } else clearFieldError(email);
+
+  if (!validateMessage(message.value)) {
+    setFieldError(message, 'Сообщение должно быть не менее 10 символов');
+    hasErrors = true;
+  } else clearFieldError(message);
+
+  if (hasErrors) return;
+
+  // Отправка
+  isSending = true;
+  const originalText = btn.innerHTML;
+  btn.innerHTML = 'Отправка...';
+  btn.style.opacity = '0.7';
+
+  try {
+    await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors', // обязательно для Apps Script
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name:    name.value.trim(),
+        phone:   phone.value.trim(),
+        email:   email.value.trim(),
+        message: message.value.trim()
+      })
+    });
+
+    // no-cors не даёт читать ответ, считаем успехом если нет ошибки
+    btn.innerHTML = '✓ Отправлено!';
+    btn.style.opacity = '1';
+    btn.style.color = '#22c55e';
+
+    // Очищаем форму
+    name.value = '';
+    phone.value = '';
+    email.value = '';
+    message.value = '';
+
+    setTimeout(() => {
+      btn.innerHTML = originalText;
+      btn.style.color = '';
+      isSending = false;
+    }, 3000);
+
+  } catch (err) {
+    btn.innerHTML = '✗ Ошибка, попробуйте снова';
+    btn.style.color = '#e53e3e';
+    btn.style.opacity = '1';
+    setTimeout(() => {
+      btn.innerHTML = originalText;
+      btn.style.color = '';
+      isSending = false;
+    }, 3000);
+  }
+}
 
   // Scroll reveal
   const observer = new IntersectionObserver((entries) => {
