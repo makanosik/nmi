@@ -830,23 +830,21 @@
     </div>
     <div>
       <div class="contact-form">
-        <form id="contactForm">
         <div class="form-group">
           <label>ИМЯ</label>
-          <input type="text" name="name" placeholder="Иван Петров">
+          <input type="text" placeholder="Иван Петров">
         </div>
         <div class="form-group">
           <label>EMAIL</label>
-          <input type="email" name="email" placeholder="ivan@company.ru">
+          <input type="email" placeholder="ivan@company.ru">
         </div>
         <div class="form-group">
           <label>СООБЩЕНИЕ</label>
-          <textarea name="message" placeholder="Расскажите о проекте..."></textarea>
+          <textarea placeholder="Расскажите о проекте..."></textarea>
         </div>
-        <button type="submit" class="btn btn-primary" style="cursor:none;border:none;text-align:left;">
+        <button class="btn btn-primary" onclick="handleSend(event)" style="cursor:none;border:none;text-align:left;">
           Отправить сообщение →
         </button>
-        </form>
       </div>
     </div>
   </div>
@@ -888,50 +886,16 @@
   });
 
   // Form
-const scriptURL = 'https://script.google.com/macros/s/AKfycbzFhXDumVNBp5a3yZYwW4dQNUpYcZagwwZtJF_3pkbpRmIQ2Ot0_HxKjiqGcsUDJrHQDg/exec';
-
-const form = document.getElementById('contactForm');
-const button = form.querySelector('button');
-
-form.addEventListener('submit', function(e) {
-  e.preventDefault();
-
-  button.textContent = 'Отправка...';
-  button.disabled = true;
-
-  const formData = {
-    name: form.name.value,
-    email: form.email.value,
-    message: form.message.value
-  };
-
-  fetch(scriptURL, {
-    method: 'POST',
-    mode: 'no-cors',
-    body: JSON.stringify(formData),
-    headers: {
-      'Content-Type': 'application/json'
-    }
-  })
-  .then(response => response.json())
-  .then(data => {
-    button.textContent = 'Отправлено ✓';
-    button.style.background = '#10b981';
-    form.reset();
-
+  function handleSend(e) {
+    e.preventDefault();
+    const btn = e.target;
+    btn.textContent = 'Отправлено ✓';
+    btn.style.background = '#10b981';
     setTimeout(() => {
-      button.textContent = 'Отправить сообщение →';
-      button.style.background = '';
-      button.disabled = false;
+      btn.textContent = 'Отправить сообщение →';
+      btn.style.background = '';
     }, 3000);
-  })
-  .catch(error => {
-    button.textContent = 'Ошибка ❌';
-    button.style.background = '#ef4444';
-    button.disabled = false;
-    console.error(error);
-  });
-});
+  }
 
   // Scroll reveal
   const observer = new IntersectionObserver((entries) => {
