@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Maksim Nosov — Full-Stack & DevOps</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=JetBrains+Mono:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080c10;
+    --surface: #0d1117;
+    --border: #1e2d3d;
+    --accent: #00d4ff;
+    --accent2: #7c3aed;
+    --accent3: #10b981;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --card: #111827;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* Custom Cursor */
+  .cursor {
+    width: 12px; height: 12px;
+    background: var(--accent);
+    border-radius: 50%;
+    position: fixed; top: 0; left: 0;
+    pointer-events: none;
+    z-index: 9999;
+    transition: transform 0.1s;
+    mix-blend-mode: screen;
+  }
+  .cursor-ring {
+    width: 36px; height: 36px;
+    border: 1px solid var(--accent);
+    border-radius: 50%;
+    position: fixed; top: 0; left: 0;
+    pointer-events: none;
+    z-index: 9998;
+    transition: all 0.15s ease;
+    opacity: 0.5;
+  }
+
+  /* Grid background */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Glowing orbs */
+  .orb {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+    z-index: 0;
+    animation: orbFloat 8s ease-in-out infinite;
+  }
+  .orb-1 { width: 400px; height: 400px; background: rgba(0,212,255,0.08); top: -100px; left: -100px; }
+  .orb-2 { width: 300px; height: 300px; background: rgba(124,58,237,0.08); bottom: 100px; right: -50px; animation-delay: -4s; }
+  @keyframes orbFloat {
+    0%,100% { transform: translateY(0); }
+    50% { transform: translateY(30px); }
+  }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    padding: 1.2rem 3rem;
+    display: flex; align-items: center; justify-content: space-between;
+    z-index: 100;
+    background: rgba(8,12,16,0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.1rem;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+  }
+  .nav-logo span { color: var(--text); }
+  .nav-links { display: flex; gap: 2rem; list-style: none; }
+  .nav-links a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--accent); }
+  .nav-status {
+    display: flex; align-items: center; gap: 0.5rem;
+    font-size: 0.7rem; color: var(--accent3);
+  }
+  .status-dot {
+    width: 7px; height: 7px;
+    background: var(--accent3);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%,100% { opacity: 1; box-shadow: 0 0 0 0 rgba(16,185,129,0.4); }
+    50% { opacity: 0.7; box-shadow: 0 0 0 6px rgba(16,185,129,0); }
+  }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex; align-items: center;
+    padding: 8rem 3rem 4rem;
+    position: relative; z-index: 1;
+    max-width: 1200px; margin: 0 auto;
+  }
+  .hero-content { flex: 1; }
+  .hero-tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    padding: 0.3rem 0.8rem;
+    border-radius: 2px;
+    margin-bottom: 2rem;
+    opacity: 0;
+    animation: fadeUp 0.6s 0.2s forwards;
+  }
+  .hero-name {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(3rem, 8vw, 6rem);
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.5rem;
+    opacity: 0;
+    animation: fadeUp 0.6s 0.4s forwards;
+  }
+  .hero-name .accent { color: var(--accent); }
+  .hero-role {
+    font-size: clamp(1rem, 2vw, 1.3rem);
+    color: var(--muted);
+    margin-bottom: 2rem;
+    opacity: 0;
+    animation: fadeUp 0.6s 0.6s forwards;
+  }
+  .hero-role .typing::after {
+    content: '|';
+    animation: blink 1s infinite;
+    color: var(--accent);
+  }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+  .hero-desc {
+    max-width: 500px;
+    color: var(--muted);
+    font-size: 0.85rem;
+    line-height: 1.8;
+    margin-bottom: 2.5rem;
+    opacity: 0;
+    animation: fadeUp 0.6s 0.8s forwards;
+  }
+  .hero-btns {
+    display: flex; gap: 1rem; flex-wrap: wrap;
+    opacity: 0;
+    animation: fadeUp 0.6s 1s forwards;
+  }
+  .btn {
+    padding: 0.8rem 1.8rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    cursor: none;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    font-weight: 600;
+  }
+  .btn-primary:hover { box-shadow: 0 0 30px rgba(0,212,255,0.4); transform: translateY(-2px); }
+  .btn-outline {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+
+  .hero-stats {
+    display: flex; gap: 3rem; margin-top: 4rem;
+    opacity: 0;
+    animation: fadeUp 0.6s 1.2s forwards;
+  }
+  .stat-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--accent);
+  }
+  .stat-label { font-size: 0.7rem; color: var(--muted); letter-spacing: 0.1em; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* CODE WINDOW */
+  .hero-visual {
+    flex: 0 0 420px;
+    margin-left: 4rem;
+    opacity: 0;
+    animation: fadeUp 0.6s 1s forwards;
+  }
+  .code-window {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 40px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(0,212,255,0.05);
+  }
+  .code-header {
+    background: #161b22;
+    padding: 0.8rem 1rem;
+    display: flex; align-items: center; gap: 0.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .code-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .code-dot.red { background: #ff5f56; }
+  .code-dot.yellow { background: #ffbd2e; }
+  .code-dot.green { background: #27c93f; }
+  .code-filename { font-size: 0.7rem; color: var(--muted); margin-left: 0.5rem; }
+  .code-body { padding: 1.5rem; font-size: 0.78rem; line-height: 1.8; }
+  .c-comment { color: #4d6080; }
+  .c-keyword { color: #c792ea; }
+  .c-string { color: #c3e88d; }
+  .c-func { color: #82aaff; }
+  .c-var { color: #f07178; }
+  .c-accent { color: var(--accent); }
+  .c-num { color: #f78c6c; }
+
+  /* SECTION */
+  section {
+    padding: 6rem 3rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative; z-index: 1;
+  }
+  .section-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.3em;
+    color: var(--accent);
+    margin-bottom: 1rem;
+  }
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 800;
+    margin-bottom: 3rem;
+    line-height: 1.1;
+  }
+  .section-title span { color: var(--accent); }
+
+  /* SKILLS */
+  .skills-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1px;
+    border: 1px solid var(--border);
+    background: var(--border);
+  }
+  .skill-card {
+    background: var(--card);
+    padding: 2rem;
+    transition: background 0.2s;
+  }
+  .skill-card:hover { background: #151e2b; }
+  .skill-icon { font-size: 1.5rem; margin-bottom: 1rem; }
+  .skill-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+  }
+  .skill-desc { font-size: 0.75rem; color: var(--muted); line-height: 1.7; }
+  .skill-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 1rem; }
+  .tag {
+    font-size: 0.65rem;
+    padding: 0.2rem 0.6rem;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    letter-spacing: 0.05em;
+  }
+  .tag.highlight { border-color: var(--accent); color: var(--accent); }
+
+  /* PORTFOLIO */
+  .portfolio-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 1.5rem;
+  }
+  .project-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    transition: all 0.3s;
+    position: relative;
+  }
+  .project-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 30px rgba(0,212,255,0.05);
+  }
+  .project-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: flex-start;
+  }
+  .project-num {
+    font-size: 0.65rem;
+    color: var(--accent);
+    letter-spacing: 0.2em;
+  }
+  .project-status {
+    font-size: 0.65rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 2px;
+  }
+  .status-live { background: rgba(16,185,129,0.1); color: var(--accent3); border: 1px solid rgba(16,185,129,0.3); }
+  .status-done { background: rgba(0,212,255,0.1); color: var(--accent); border: 1px solid rgba(0,212,255,0.3); }
+  .project-body { padding: 1.5rem; }
+  .project-name {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+  }
+  .project-desc { font-size: 0.78rem; color: var(--muted); line-height: 1.7; margin-bottom: 1.2rem; }
+  .project-tech { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  .project-metrics {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--border);
+    display: flex; gap: 1.5rem;
+  }
+  .metric { font-size: 0.7rem; color: var(--muted); }
+  .metric strong { display: block; color: var(--text); font-size: 0.85rem; }
+
+  /* SERVICES */
+  .services-list { display: flex; flex-direction: column; gap: 1px; background: var(--border); }
+  .service-item {
+    background: var(--card);
+    padding: 2rem;
+    display: flex; align-items: center; gap: 2rem;
+    cursor: none;
+    transition: background 0.2s;
+  }
+  .service-item:hover { background: #151e2b; }
+  .service-num { font-size: 0.65rem; color: var(--accent); width: 40px; flex-shrink: 0; }
+  .service-info { flex: 1; }
+  .service-name {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-bottom: 0.3rem;
+  }
+  .service-desc { font-size: 0.78rem; color: var(--muted); }
+  .service-price {
+    font-size: 0.85rem;
+    color: var(--accent);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  /* CONTACT */
+  .contact-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: start;
+  }
+  .contact-info p {
+    font-size: 0.85rem;
+    color: var(--muted);
+    line-height: 1.8;
+    margin-bottom: 2rem;
+  }
+  .contact-links { display: flex; flex-direction: column; gap: 1rem; }
+  .contact-link {
+    display: flex; align-items: center; gap: 1rem;
+    text-decoration: none;
+    color: var(--text);
+    font-size: 0.8rem;
+    padding: 1rem;
+    border: 1px solid var(--border);
+    transition: all 0.2s;
+  }
+  .contact-link:hover { border-color: var(--accent); color: var(--accent); }
+  .contact-link-icon { font-size: 1.1rem; }
+  .contact-form { display: flex; flex-direction: column; gap: 1rem; }
+  .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
+  .form-group label { font-size: 0.7rem; letter-spacing: 0.1em; color: var(--muted); }
+  .form-group input, .form-group textarea {
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 0.8rem 1rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    outline: none;
+    transition: border-color 0.2s;
+    resize: vertical;
+  }
+  .form-group input:focus, .form-group textarea:focus { border-color: var(--accent); }
+  .form-group textarea { min-height: 100px; }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 2rem 3rem;
+    display: flex; justify-content: space-between; align-items: center;
+    position: relative; z-index: 1;
+    font-size: 0.7rem; color: var(--muted);
+    max-width: 100%;
+  }
+  .footer-copy span { color: var(--accent); }
+
+  /* DIVIDER */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  @media (max-width: 900px) {
+    .hero { flex-direction: column; padding: 7rem 1.5rem 4rem; }
+    .hero-visual { margin-left: 0; margin-top: 3rem; flex: 1; width: 100%; }
+    .contact-grid { grid-template-columns: 1fr; }
+    nav { padding: 1rem 1.5rem; }
+    .nav-links { display: none; }
+    section { padding: 4rem 1.5rem; }
+    footer { padding: 1.5rem; flex-direction: column; gap: 0.5rem; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">NM<span>.dev</span></div>
+  <ul class="nav-links">
+    <li><a href="#skills">// навыки</a></li>
+    <li><a href="#portfolio">// портфолио</a></li>
+    <li><a href="#services">// услуги</a></li>
+    <li><a href="#contact">// контакт</a></li>
+  </ul>
+  <div class="nav-status">
+    <div class="status-dot"></div>
+    доступен для заказов
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-content">
+    <div class="hero-tag">FULL-STACK DEVELOPER & DEVOPS ENGINEER</div>
+    <h1 class="hero-name">Максим<br><span class="accent">Носов</span></h1>
+    <p class="hero-role"><span class="typing">Создаю продукты. Автоматизирую процессы. Делаю быстро.</span></p>
+    <p class="hero-desc">
+      Разрабатываю веб-сайты и приложения с нуля до деплоя. Настраиваю CI/CD пайплайны, контейнеризацию и облачную инфраструктуру. Работаю с любым стеком — от React до Go, от PostgreSQL до Kubernetes.
+    </p>
+    <div class="hero-btns">
+      <a href="#portfolio" class="btn btn-primary">Посмотреть работы</a>
+      <a href="#contact" class="btn btn-outline">Написать мне</a>
+    </div>
+    <div class="hero-stats">
+      <div>
+        <div class="stat-num">47+</div>
+        <div class="stat-label">проектов</div>
+      </div>
+      <div>
+        <div class="stat-num">5 лет</div>
+        <div class="stat-label">опыта</div>
+      </div>
+      <div>
+        <div class="stat-num">99%</div>
+        <div class="stat-label">uptime</div>
+      </div>
+    </div>
+  </div>
+  <div class="hero-visual">
+    <div class="code-window">
+      <div class="code-header">
+        <div class="code-dot red"></div>
+        <div class="code-dot yellow"></div>
+        <div class="code-dot green"></div>
+        <span class="code-filename">deploy.yaml</span>
+      </div>
+      <div class="code-body">
+        <div><span class="c-comment"># Maksim Nosov — stack 2026</span></div>
+        <div>&nbsp;</div>
+        <div><span class="c-keyword">const</span> <span class="c-var">developer</span> = {</div>
+        <div>&nbsp; <span class="c-func">name</span>: <span class="c-string">"Максим Носов"</span>,</div>
+        <div>&nbsp; <span class="c-func">location</span>: <span class="c-string">"Пермь, 🌍 Remote"</span>,</div>
+        <div>&nbsp; <span class="c-func">frontend</span>: [<span class="c-string">"React"</span>, <span class="c-string">"Next.js"</span>, <span class="c-string">"Vue"</span>],</div>
+        <div>&nbsp; <span class="c-func">backend</span>: [<span class="c-string">"Node"</span>, <span class="c-string">"Go"</span>, <span class="c-string">"Python"</span>],</div>
+        <div>&nbsp; <span class="c-func">devops</span>: [<span class="c-string">"Docker"</span>, <span class="c-string">"K8s"</span>, <span class="c-string">"CI/CD"</span>],</div>
+        <div>&nbsp; <span class="c-func">available</span>: <span class="c-accent">true</span>,</div>
+        <div>&nbsp; <span class="c-func">responseTime</span>: <span class="c-string">"&lt; 2 часов"</span>,</div>
+        <div>}</div>
+        <div>&nbsp;</div>
+        <div><span class="c-comment">// Готов к запуску? 🚀</span></div>
+        <div><span class="c-func">export default</span> developer;</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- SKILLS -->
+<section id="skills">
+  <div class="section-label">// 01 — НАВЫКИ</div>
+  <h2 class="section-title">Полный стек.<br><span>От идеи до сервера.</span></h2>
+  <div class="skills-grid">
+    <div class="skill-card">
+      <div class="skill-icon">⚛️</div>
+      <div class="skill-title">Frontend</div>
+      <div class="skill-desc">Создаю быстрые, доступные и красивые интерфейсы с фокусом на UX и производительность.</div>
+      <div class="skill-tags">
+        <span class="tag highlight">React</span>
+        <span class="tag highlight">Next.js 15</span>
+        <span class="tag">Vue 3</span>
+        <span class="tag">TypeScript</span>
+        <span class="tag">Tailwind</span>
+        <span class="tag">WebGL</span>
+      </div>
+    </div>
+    <div class="skill-card">
+      <div class="skill-icon">⚙️</div>
+      <div class="skill-title">Backend</div>
+      <div class="skill-desc">REST и GraphQL API, микросервисы, высоконагруженные системы. Безопасность и масштабируемость.</div>
+      <div class="skill-tags">
+        <span class="tag highlight">Node.js</span>
+        <span class="tag highlight">Go</span>
+        <span class="tag">Python</span>
+        <span class="tag">PostgreSQL</span>
+        <span class="tag">Redis</span>
+        <span class="tag">MongoDB</span>
+      </div>
+    </div>
+    <div class="skill-card">
+      <div class="skill-icon">🐳</div>
+      <div class="skill-title">DevOps</div>
+      <div class="skill-desc">Настраиваю инфраструктуру, автоматизирую деплой и слежу за uptime. CI/CD, мониторинг, логирование.</div>
+      <div class="skill-tags">
+        <span class="tag highlight">Docker</span>
+        <span class="tag highlight">Kubernetes</span>
+        <span class="tag">GitHub Actions</span>
+        <span class="tag">Terraform</span>
+        <span class="tag">Prometheus</span>
+        <span class="tag">Nginx</span>
+      </div>
+    </div>
+    <div class="skill-card">
+      <div class="skill-icon">☁️</div>
+      <div class="skill-title">Cloud & Infra</div>
+      <div class="skill-desc">Облачные решения на AWS, Yandex Cloud и VPS. Настройка сетей, SSL, балансировка нагрузки.</div>
+      <div class="skill-tags">
+        <span class="tag highlight">AWS</span>
+        <span class="tag highlight">Yandex Cloud</span>
+        <span class="tag">Linux</span>
+        <span class="tag">Ansible</span>
+        <span class="tag">Grafana</span>
+        <span class="tag">Cloudflare</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- PORTFOLIO -->
+<section id="portfolio">
+  <div class="section-label">// 02 — ПОРТФОЛИО</div>
+  <h2 class="section-title">Реальные проекты.<br><span>Живые результаты.</span></h2>
+  <div class="portfolio-grid">
+
+    <div class="project-card">
+      <div class="project-header">
+        <span class="project-num">PROJECT_01</span>
+        <span class="project-status status-live">● LIVE</span>
+      </div>
+      <div class="project-body">
+        <div class="project-name">Finova Dashboard</div>
+        <div class="project-desc">SaaS-платформа для управления финансами малого бизнеса. Реалтайм аналитика, интеграция с банками через Open Banking API, 15 000 активных пользователей.</div>
+        <div class="project-tech">
+          <span class="tag highlight">Next.js</span>
+          <span class="tag">Go</span>
+          <span class="tag">PostgreSQL</span>
+          <span class="tag">K8s</span>
+          <span class="tag">Redis</span>
+        </div>
+      </div>
+      <div class="project-metrics">
+        <div class="metric"><strong>15K+</strong> пользователей</div>
+        <div class="metric"><strong>99.98%</strong> uptime</div>
+        <div class="metric"><strong>&lt;80ms</strong> API</div>
+      </div>
+    </div>
+
+    <div class="project-card">
+      <div class="project-header">
+        <span class="project-num">PROJECT_02</span>
+        <span class="project-status status-live">● LIVE</span>
+      </div>
+      <div class="project-body">
+        <div class="project-name">ShipFast Logistics</div>
+        <div class="project-desc">Платформа для управления доставками с трекингом в реальном времени. Мобильное приложение для курьеров, интеграция с 1С и картами.</div>
+        <div class="project-tech">
+          <span class="tag highlight">React Native</span>
+          <span class="tag">Node.js</span>
+          <span class="tag">WebSockets</span>
+          <span class="tag">MongoDB</span>
+          <span class="tag">Docker</span>
+        </div>
+      </div>
+      <div class="project-metrics">
+        <div class="metric"><strong>3K+</strong> курьеров</div>
+        <div class="metric"><strong>500K</strong> доставок</div>
+        <div class="metric"><strong>4.8★</strong> рейтинг</div>
+      </div>
+    </div>
+
+    <div class="project-card">
+      <div class="project-header">
+        <span class="project-num">PROJECT_03</span>
+        <span class="project-status status-done">✓ ЗАВЕРШЁН</span>
+      </div>
+      <div class="project-body">
+        <div class="project-name">MedBook Clinic</div>
+        <div class="project-desc">Система онлайн-записи для сети медицинских клиник. HIPAA-совместимость, ЭДО, автоматические напоминания пациентам через Telegram.</div>
+        <div class="project-tech">
+          <span class="tag highlight">Vue 3</span>
+          <span class="tag">Python</span>
+          <span class="tag">FastAPI</span>
+          <span class="tag">PostgreSQL</span>
+          <span class="tag">Terraform</span>
+        </div>
+      </div>
+      <div class="project-metrics">
+        <div class="metric"><strong>12</strong> клиник</div>
+        <div class="metric"><strong>−60%</strong> неявок</div>
+        <div class="metric"><strong>2 мес.</strong> разработки</div>
+      </div>
+    </div>
+
+    <div class="project-card">
+      <div class="project-header">
+        <span class="project-num">PROJECT_04</span>
+        <span class="project-status status-live">● LIVE</span>
+      </div>
+      <div class="project-body">
+        <div class="project-name">DevPipe CI/CD Platform</div>
+        <div class="project-desc">Внутренняя CI/CD платформа для команды из 40 разработчиков. Автодеплой, канарейные релизы, Slack-уведомления, визуальный дашборд пайплайнов.</div>
+        <div class="project-tech">
+          <span class="tag highlight">Kubernetes</span>
+          <span class="tag">GitHub Actions</span>
+          <span class="tag">Prometheus</span>
+          <span class="tag">Grafana</span>
+          <span class="tag">ArgoCD</span>
+        </div>
+      </div>
+      <div class="project-metrics">
+        <div class="metric"><strong>−75%</strong> время деплоя</div>
+        <div class="metric"><strong>40</strong> разработчиков</div>
+        <div class="metric"><strong>0</strong> даунтаймов</div>
+      </div>
+    </div>
+
+    <div class="project-card">
+      <div class="project-header">
+        <span class="project-num">PROJECT_05</span>
+        <span class="project-status status-done">✓ ЗАВЕРШЁН</span>
+      </div>
+      <div class="project-body">
+        <div class="project-name">EduFlow LMS</div>
+        <div class="project-desc">Платформа онлайн-обучения с видеоуроками, тестами и прогрессом. Стриминг через HLS, интерактивные задания, сертификаты PDF.</div>
+        <div class="project-tech">
+          <span class="tag highlight">Next.js</span>
+          <span class="tag">Node.js</span>
+          <span class="tag">ffmpeg</span>
+          <span class="tag">AWS S3</span>
+          <span class="tag">Stripe</span>
+        </div>
+      </div>
+      <div class="project-metrics">
+        <div class="metric"><strong>8K</strong> студентов</div>
+        <div class="metric"><strong>200+</strong> курсов</div>
+        <div class="metric"><strong>$120K</strong> оборот/год</div>
+      </div>
+    </div>
+
+    <div class="project-card">
+      <div class="project-header">
+        <span class="project-num">PROJECT_06</span>
+        <span class="project-status status-live">● LIVE</span>
+      </div>
+      <div class="project-body">
+        <div class="project-name">StoreX E-commerce</div>
+        <div class="project-desc">Высоконагруженный интернет-магазин с 500K товаров. Поиск через Elasticsearch, кэш на Redis, CDN, 30К посетителей в сутки.</div>
+        <div class="project-tech">
+          <span class="tag highlight">React</span>
+          <span class="tag">Go</span>
+          <span class="tag">Elasticsearch</span>
+          <span class="tag">Redis</span>
+          <span class="tag">Cloudflare</span>
+        </div>
+      </div>
+      <div class="project-metrics">
+        <div class="metric"><strong>30K</strong> визитов/день</div>
+        <div class="metric"><strong>500K</strong> товаров</div>
+        <div class="metric"><strong>1.2с</strong> загрузка</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- SERVICES -->
+<section id="services">
+  <div class="section-label">// 03 — УСЛУГИ</div>
+  <h2 class="section-title">Что я делаю<br><span>и сколько стоит.</span></h2>
+  <div class="services-list">
+    <div class="service-item">
+      <div class="service-num">01</div>
+      <div class="service-info">
+        <div class="service-name">Сайт-визитка / Лендинг</div>
+        <div class="service-desc">Быстрый, адаптивный, с анимациями. Деплой + домен + SSL в комплекте.</div>
+      </div>
+      <div class="service-price">от 25 000 ₽</div>
+    </div>
+    <div class="service-item">
+      <div class="service-num">02</div>
+      <div class="service-info">
+        <div class="service-name">Веб-приложение / SaaS</div>
+        <div class="service-desc">Полный цикл: проектирование, дизайн, разработка, деплой, поддержка.</div>
+      </div>
+      <div class="service-price">от 120 000 ₽</div>
+    </div>
+    <div class="service-item">
+      <div class="service-num">03</div>
+      <div class="service-info">
+        <div class="service-name">API и Backend</div>
+        <div class="service-desc">REST / GraphQL API, интеграции, Telegram-боты, парсеры, автоматизация.</div>
+      </div>
+      <div class="service-price">от 40 000 ₽</div>
+    </div>
+    <div class="service-item">
+      <div class="service-num">04</div>
+      <div class="service-info">
+        <div class="service-name">DevOps & Инфраструктура</div>
+        <div class="service-desc">Docker, Kubernetes, CI/CD, мониторинг, облако. Настройка с нуля или аудит.</div>
+      </div>
+      <div class="service-price">от 35 000 ₽</div>
+    </div>
+    <div class="service-item">
+      <div class="service-num">05</div>
+      <div class="service-info">
+        <div class="service-name">Техническое сопровождение</div>
+        <div class="service-desc">Ежемесячная поддержка, обновления, бэкапы, мониторинг 24/7.</div>
+      </div>
+      <div class="service-price">от 15 000 ₽/мес</div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="section-label">// 04 — КОНТАКТ</div>
+  <h2 class="section-title">Есть проект?<br><span>Давайте поговорим.</span></h2>
+  <div class="contact-grid">
+    <div class="contact-info">
+      <p>Отвечаю в течение 2 часов в рабочее время. Первая консультация — бесплатно. Работаю с заказчиками из России, СНГ и зарубежья.</p>
+      <div class="contact-links">
+         <a class="contact-link">
+          <span class="contact-link-icon">📞</span>
+          <span>Телефон: +7 950 449 82 80</span>
+        </a>
+        <a class="contact-link" href="https://t.me/mak5ik">
+          <span class="contact-link-icon">✈️</span>
+          <span>Telegram: @Mak5ik</span>
+        </a>
+        <a class="contact-link" href="mailto:drslik@yandex.ru">
+          <span class="contact-link-icon">📧</span>
+          <span>drslik@yandex.ru</span>
+        </a>
+        <a class="contact-link" href="#">
+          <span class="contact-link-icon">💼</span>
+          <span>GitHub: github.com/makanosik</span>
+        </a>
+             </div>
+    </div>
+    <div>
+      <div class="contact-form">
+        <div class="form-group">
+          <label>ИМЯ</label>
+          <input type="text" placeholder="Иван Петров">
+        </div>
+        <div class="form-group">
+          <label>EMAIL</label>
+          <input type="email" placeholder="ivan@company.ru">
+        </div>
+        <div class="form-group">
+          <label>СООБЩЕНИЕ</label>
+          <textarea placeholder="Расскажите о проекте..."></textarea>
+        </div>
+        <button class="btn btn-primary" onclick="handleSend(event)" style="cursor:none;border:none;text-align:left;">
+          Отправить сообщение →
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-copy">© 2026 <span>Максим Носов</span>. Все права защищены.</div>
+  <div>Сделано с ☕</div>
+</footer>
+
+<script>
+  // Custom cursor
+  const cursor = document.getElementById('cursor');
+  const ring = document.getElementById('cursorRing');
+  let mx = 0, my = 0, rx = 0, ry = 0;
+
+  document.addEventListener('mousemove', e => {
+    mx = e.clientX; my = e.clientY;
+    cursor.style.left = mx - 6 + 'px';
+    cursor.style.top = my - 6 + 'px';
+  });
+
+  function animateRing() {
+    rx += (mx - rx) * 0.12;
+    ry += (my - ry) * 0.12;
+    ring.style.left = rx - 18 + 'px';
+    ring.style.top = ry - 18 + 'px';
+    requestAnimationFrame(animateRing);
+  }
+  animateRing();
+
+  // Smooth scroll
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      const target = document.querySelector(a.getAttribute('href'));
+      if (target) target.scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+
+  // Form
+  function handleSend(e) {
+    e.preventDefault();
+    const btn = e.target;
+    btn.textContent = 'Отправлено ✓';
+    btn.style.background = '#10b981';
+    setTimeout(() => {
+      btn.textContent = 'Отправить сообщение →';
+      btn.style.background = '';
+    }, 3000);
+  }
+
+  // Scroll reveal
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.style.opacity = '1';
+        entry.target.style.transform = 'translateY(0)';
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.skill-card, .project-card, .service-item').forEach(el => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(20px)';
+    el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+    observer.observe(el);
+  });
+</script>
+</body>
+</html>
